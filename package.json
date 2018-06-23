@@ -1,0 +1,48 @@
+{
+  "name": "sitcom",
+  "version": "1.0.0.beta.1",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Maofeng Zhang <japplet@163.com>",
+  "typings": "types.d.ts",
+  "keywords": [
+    "marked",
+    "markdown",
+    "sitcom",
+    "html"
+  ],
+  "bin": {
+    "sitcom": "bin/sitcom"
+  },
+  "scripts": {
+    "build": "rollup -c scripts/build.js",
+    "dev": "rollup -c scripts/build.js -w"
+  },
+  "bugs": {
+    "url": "https://github.com/appletjs/sitcom/issues"
+  },
+  "homepage": "https://github.com/appletjs/sitcom#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appletjs/sitcom.git"
+  },
+  "dependencies": {
+    "call2p": "0.0.4",
+    "chalk": "^2.4.1",
+    "commander": "^2.15.1",
+    "marked": "^0.4.0",
+    "mkdirp": "^0.5.1",
+    "mustache": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/ini": "^1.3.29",
+    "@types/marked": "^0.4.0",
+    "@types/mkdirp": "^0.5.2",
+    "@types/mustache": "^0.8.31",
+    "@types/node": "^10.3.4",
+    "rollup": "^0.61.2",
+    "rollup-plugin-json": "^3.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "typescript": "^2.9.2"
+  }
+}

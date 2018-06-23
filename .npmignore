@@ -1,0 +1,13 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/
+docs/
+node_modules/
+scripts/
+src/
+.editorconfig
+.gitignore
+.npmignore
+.prettierrc
+package-lock.json
+tsconfig.json
+tslint.json

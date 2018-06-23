@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "diagnostics": true,
+    "downlevelIteration": false,
+    "lib": ["es5", "es6", "esnext"],
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "pretty": false,
+    "skipLibCheck": true,
+    "target": "esnext",
+    "module": "commonjs",
+    "sourceMap": false
+  },
+  "include": [
+    "types.d.ts",
+    "src",
+    "bin",
+    "browser"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

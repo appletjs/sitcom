@@ -1,0 +1,199 @@
+#!/usr/bin/env node
+
+/*!
+ * Sitcom CLI v1.0.0.beta.1
+ * Sat, 23 Jun 2018 22:42:08 GMT - commit unknown
+ * https://github.com/appletjs/sitcom
+ * Released under the MIT License.
+ */
+'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var path = _interopDefault(require('path'));
+var fs = _interopDefault(require('fs'));
+var chalk = _interopDefault(require('chalk'));
+var program = _interopDefault(require('commander'));
+var sitcom = _interopDefault(require('..'));
+
+const parsers = {
+    '.json': readJsonConfig,
+    '.js': readJsConfig,
+};
+/**
+ * 解析配置文件
+ *
+ * @param {string} file
+ * @returns {Object}
+ *
+ * @throws {Error}
+ */
+function readConfig(file) {
+    const extension = path.extname(file);
+    const configType = extension.toLowerCase();
+    file = path.resolve(file);
+    let config;
+    if (extension === '') {
+        ['.js', '.json'].some(function (type) {
+            try {
+                config = parsers[type](file);
+                return true;
+            }
+            catch (e) {
+            }
+        });
+    }
+    else if (parsers.hasOwnProperty(configType)) {
+        config = parsers[configType](file);
+    }
+    else {
+        throw new Error(`non-support the config extension "${extension}"`);
+    }
+    if (config == null) {
+        throw new Error('readFile config failed');
+    }
+    const type = Object.prototype.toString.call(config)
+        .slice(8, -1)
+        .toLowerCase();
+    if (type !== 'object') {
+        throw new Error(`bad config type "${type}"`);
+    }
+    return config;
+}
+/**
+ * @param {string} file
+ * @returns {*}
+ */
+function readJsonConfig(file) {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+/**
+ * @param {string} file
+ * @returns {*}
+ */
+function readJsConfig(file) {
+    return require(file);
+}
+
+let lastCallNewline = true;
+function stdout(message, type, newline) {
+    if (message === undefined) {
+        return lastCallNewline;
+    }
+    if (typeof message === 'boolean') {
+        [message, newline, type] = ['', message, 'log'];
+    }
+    else if (typeof type === 'boolean') {
+        [type, newline] = ['log', type];
+    }
+    lastCallNewline = newline;
+    switch (type) {
+        case 'ok':
+            message = chalk.bold.green(message);
+            break;
+        case 'warn':
+            message = chalk.bold.yellow(message);
+            break;
+        case 'err':
+            message = chalk.bold.red(message);
+            break;
+        case 'log':
+            message = chalk.gray(message);
+            break;
+    }
+    if (newline) {
+        message += '\n';
+    }
+    process.stdout.write(message);
+}
+
+let stdout$1;
+/**
+ * @param {Error | number | string} e
+ */
+function exit(e) {
+    let code = 0;
+    if (typeof e === 'number') {
+        code = e;
+    }
+    else if (e instanceof Error) {
+        stdout$1(e.stack || e.message, 'err', true);
+        code = e.code || code;
+        stdout$1(true);
+    }
+    else if (e) {
+        stdout$1(e, 'ok', true);
+    }
+    process.exit(code);
+}
+/**
+ * @param {Command} program
+ * @param {Sitcom} sitcom
+ */
+function execute(program$$1, sitcom$$1) {
+    stdout$1 = sitcom$$1.stdout;
+    const args = program$$1.args.slice();
+    const startTime = Date.now();
+    sitcom$$1.options.stdout = stdout;
+    // 监听退出
+    process.on('exit', function () {
+        if (!stdout$1())
+            stdout$1(true);
+        const time = (Date.now() - startTime) / 1000;
+        stdout$1('Done in ' + time.toFixed(2) + 's', 'tip', true);
+    });
+    const config = {
+        input: '',
+        output: {},
+        marked: {},
+    };
+    // 读取配置文件可选
+    if (program$$1.config) {
+        try {
+            Object.assign(config, readConfig(program$$1.config));
+        }
+        catch (e) {
+            exit(e);
+        }
+    }
+    if (!config.stdout)
+        config.stdout = stdout;
+    if (args.length)
+        config.input = args.shift();
+    if (program$$1.root)
+        config.root = program$$1.root;
+    if (program$$1.silent)
+        config.silent = program$$1.silent;
+    if (program$$1.declare)
+        config.declare = program$$1.declare;
+    if (program$$1.dist)
+        config.output.dist = program$$1.dist;
+    if (program$$1.file)
+        config.output.file = program$$1.file;
+    if (program$$1.intro)
+        config.output.intro = program$$1.intro;
+    if (program$$1.outro)
+        config.output.outro = program$$1.outro;
+    // 入口必须
+    if (!config.input) {
+        exit(new Error('Input not found.'));
+    }
+    sitcom$$1.make(config)
+        .then(bundle => bundle.write())
+        .then(() => exit('Success!'))
+        .catch(exit);
+}
+
+program
+    .version('0.1.0')
+    .option('-c, --config [file]', 'Use this config file (if argument is used but value is unspecified, defaults to .sitcomrc.js)', '.sitcomrc.js')
+    .option('-d, --dist [dir]', 'Output directory')
+    // .option('-i, --input <file>', 'Input (alternative to <entry file>')
+    .option('-o, --file <output>', 'Output (if absent, prints to stdout)')
+    .option('--intro [string]', 'Content to insert at top of bundle (inside wrapper)')
+    .option('--outro [string]', 'Content to insert at end of bundle (inside wrapper)')
+    .option('--silent', 'Don\'t print warnings to the console.')
+    .option('--declare [file]', 'Markdown referencing declaration.')
+    .option('--root [dir]', 'Working directory.')
+    .parse(process.argv);
+execute(program, sitcom());
