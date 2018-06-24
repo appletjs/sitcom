@@ -1,6 +1,6 @@
 {
   "name": "sitcom",
-  "version": "1.0.0.beta.1",
+  "version": "1.0.0-alpha1",
   "main": "index.js",
   "license": "MIT",
   "author": "Maofeng Zhang <japplet@163.com>",
